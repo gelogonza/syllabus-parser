@@ -1,81 +1,72 @@
 # Syllabus Importer
 
-A production-grade application that transforms syllabus documents into actionable tasks and calendar events using AI-powered parsing and a clean Notion-style interface.
-
-![Syllabus Importer Screenshot](https://via.placeholder.com/800x400?text=Syllabus+Importer+Screenshot)
+A web application that converts syllabus documents into structured tasks and calendar events. Built with Next.js and designed with a clean, minimal interface inspired by Notion.
 
 ## Features
 
-- **🚀 Smart Upload**: Drag-and-drop interface supporting PDF, DOCX, and TXT files
-- **🤖 AI Parsing**: Intelligent extraction of assignments, exams, deadlines, and events
-- **📊 Confidence Scoring**: AI provides confidence levels for extracted items with human-in-the-loop review
-- **✏️ Inline Editing**: Notion-style editable table for reviewing and correcting items
-- **📅 Calendar Integration**: Export to ICS or sync with Google Calendar
-- **⌨️ Keyboard Navigation**: Full keyboard support with Cmd/Ctrl+K command menu
-- **♿ Accessibility**: WCAG AA compliant with screen reader support
-- **🌙 Dark Mode**: Automatic theme switching based on system preference
-- **📱 Responsive**: Works beautifully on desktop, tablet, and mobile
+- **Document Upload**: Drag-and-drop interface supporting PDF, DOCX, and TXT files
+- **Content Parsing**: Extracts assignments, exams, deadlines, and events from uploaded documents
+- **Confidence Scoring**: Provides reliability indicators for extracted content with manual review options
+- **Inline Editing**: Editable table interface for reviewing and correcting extracted items
+- **Calendar Export**: Generate ICS files and sync with Google Calendar
+- **Keyboard Navigation**: Full keyboard support with command menu (Cmd/Ctrl+K)
+- **Accessibility**: WCAG AA compliant with screen reader support
+- **Dark Mode**: Automatic theme switching based on system preference
+- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
 
-## Quick Start
+## Getting Started
 
-1. **Clone and Install**
-   ```bash
-   git clone <repository-url>
-   cd syllabus
-   npm install
-   ```
+Clone the repository and install dependencies:
 
-2. **Set up Database**
-   ```bash
-   # Copy environment variables
-   cp .env.example .env
-   
-   # Update DATABASE_URL in .env with your PostgreSQL connection string
-   
-   # Run migrations
-   npx prisma migrate dev
-   ```
+```bash
+git clone <repository-url>
+cd syllabus
+npm install
+```
 
-3. **Start Development Server**
-   ```bash
-   npm run dev
-   ```
+Set up the database:
 
-4. **Open Application**
-   Visit [http://localhost:3000](http://localhost:3000)
+```bash
+# Copy environment variables
+cp .env.example .env
 
-## Tech Stack
+# Add your PostgreSQL connection string to .env
+# DATABASE_URL="postgresql://username:password@localhost:5432/syllabus_db"
 
-- **Frontend**: Next.js 15 (App Router), React 19, TypeScript
-- **Styling**: TailwindCSS with custom Notion-inspired design tokens
+# Run database migrations
+npx prisma migrate dev
+```
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Technology Stack
+
+- **Frontend**: Next.js 15 with App Router, React 19, TypeScript
+- **Styling**: TailwindCSS with custom design tokens
 - **UI Components**: Radix UI primitives with custom styling
 - **Database**: PostgreSQL with Prisma ORM
 - **State Management**: TanStack Query for server state
 - **Forms**: React Hook Form with Zod validation
-- **Animation**: Framer Motion (respects reduced motion)
+- **Animation**: Framer Motion with reduced motion support
 - **Testing**: Jest, React Testing Library, Playwright
 - **CI/CD**: GitHub Actions, Vercel deployment
 
 ## Architecture
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Frontend      │    │   API Layer     │    │   Database      │
-│   (Next.js)     │◄──►│   (Next.js API) │◄──►│   (PostgreSQL)  │
-│                 │    │                 │    │                 │
-│ - React UI      │    │ - File Upload   │    │ - User Data     │
-│ - TanStack Query│    │ - Parsing Jobs  │    │ - Syllabi       │
-│ - Form Handling │    │ - CRUD Ops      │    │ - Items         │
-│ - State Mgmt    │    │ - Export/Sync   │    │ - Audit Logs    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
+The application follows a standard three-tier architecture with a React frontend, Next.js API layer, and PostgreSQL database. The frontend handles user interactions and form validation, the API layer processes file uploads and manages data operations, and the database stores user information and extracted syllabus content.
 
 ## Development
 
-### Available Scripts
+Available commands:
 
 ```bash
-npm run dev          # Start development server with Turbopack
+npm run dev          # Start development server
 npm run build        # Build for production
 npm run start        # Start production server
 npm run lint         # Run ESLint
@@ -87,31 +78,28 @@ npm run db:studio    # Open Prisma Studio
 
 ### Environment Variables
 
-Create a `.env` file with:
+Create a `.env` file with your database connection:
 
 ```bash
-# Required
 DATABASE_URL="postgresql://username:password@localhost:5432/syllabus_db"
 NODE_ENV="development"
 
-# Optional
-GOOGLE_CLIENT_ID=""              # Google Calendar integration
-GOOGLE_CLIENT_SECRET=""          # Google Calendar integration
-BLOB_READ_WRITE_TOKEN=""         # Vercel Blob storage
-OPENAI_API_KEY=""               # Enhanced parsing with OpenAI
+# Optional integrations
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+BLOB_READ_WRITE_TOKEN=""
+OPENAI_API_KEY=""
 ```
 
 ## Deployment
 
-### Vercel (Recommended)
+The application can be deployed to Vercel or any platform supporting Next.js:
 
-1. Connect your GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Deploy automatically on push to main branch
+1. Connect your repository to your hosting platform
+2. Set the required environment variables
+3. Deploy from the main branch
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyour-username%2Fsyllabus-importer)
-
-See [DEPLOY.md](docs/DEPLOY.md) for detailed deployment instructions.
+See [docs/DEPLOY.md](docs/DEPLOY.md) for detailed deployment instructions.
 
 ## Project Structure
 
@@ -139,13 +127,13 @@ See [DEPLOY.md](docs/DEPLOY.md) for detailed deployment instructions.
 
 ## Design System
 
-The application uses a Notion-inspired design system featuring:
+The interface uses a minimal design system with:
 
-- **Colors**: Neutral grays (#ffffff/#0b0b0c) with blue accent (HSL 220 96% 55%)
-- **Typography**: Inter font, 16px base, 1.55 line height, 500 weight for headings
-- **Spacing**: Generous whitespace with compact data tables
-- **Interactions**: Subtle hover states, 2px focus rings
-- **Accessibility**: 4.5:1 contrast ratio, full keyboard navigation
+- **Colors**: Neutral grays with a blue accent color
+- **Typography**: Inter font family with consistent sizing
+- **Layout**: Clean spacing and organized data presentation
+- **Interactions**: Subtle hover effects and focus indicators
+- **Accessibility**: High contrast ratios and keyboard navigation support
 
 ## API Example
 
