@@ -22,9 +22,9 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
   const { data: syllabus, isLoading, error, refetch } = useQuery({
     queryKey: ['syllabus', id],
     queryFn: () => fetchSyllabus(id),
-    refetchInterval: (data) => {
+    refetchInterval: (query) => {
       // Poll every 2 seconds if still parsing
-      return data?.status === 'PARSING' ? 2000 : false;
+      return query.state.data?.status === 'PARSING' ? 2000 : false;
     },
   });
 

@@ -3,7 +3,6 @@
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Upload, File, X, AlertCircle, CheckCircle } from 'lucide-react';
 import { fileUploadSchema } from '@/lib/utils/validation';
@@ -36,7 +35,7 @@ export function UploadCard() {
       } catch (error) {
         if (error instanceof z.ZodError) {
           uploadedFile.status = 'error';
-          uploadedFile.error = error.errors[0].message;
+          uploadedFile.error = error.issues[0].message;
         }
       }
     });

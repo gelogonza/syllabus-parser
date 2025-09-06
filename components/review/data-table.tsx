@@ -3,15 +3,13 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { EditableCell } from './editable-cell';
 import { DateCell } from './date-cell';
 import { TypeSelect } from './type-select';
 import { ConfidenceBadge } from './confidence-badge';
 import { DataTableToolbar } from './data-table-toolbar';
-import { cn, formatDate } from '@/lib/utils';
-import { Trash2, Plus } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Trash2 } from 'lucide-react';
 
 interface DataTableProps {
   data: any[];
@@ -228,7 +226,7 @@ export function DataTable({ data, syllabusId }: DataTableProps) {
             </thead>
             
             <tbody>
-              {sortedData.map((item, index) => (
+              {sortedData.map((item) => (
                 <tr
                   key={item.id}
                   className={cn(

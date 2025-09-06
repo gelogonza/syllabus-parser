@@ -10,7 +10,7 @@ export function formatDate(date: string | Date, formatStr: string = 'MMM d, yyyy
       return 'Invalid date';
     }
     return format(dateObj, formatStr);
-  } catch (error) {
+  } catch {
     return 'Invalid date';
   }
 }

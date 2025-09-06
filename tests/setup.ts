@@ -15,15 +15,24 @@ jest.mock('next/navigation', () => ({
 // Mock Framer Motion to avoid animation issues in tests
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
-    button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+    div: ({ children, ...props }: any) => {
+      const React = require('react');
+      return React.createElement('div', props, children);
+    },
+    span: ({ children, ...props }: any) => {
+      const React = require('react');
+      return React.createElement('span', props, children);
+    },
+    button: ({ children, ...props }: any) => {
+      const React = require('react');
+      return React.createElement('button', props, children);
+    },
   },
   AnimatePresence: ({ children }: any) => children,
 }));
 
 // Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
+(global as any).IntersectionObserver = class {
   constructor() {}
   observe() {}
   disconnect() {}
@@ -31,7 +40,7 @@ global.IntersectionObserver = class IntersectionObserver {
 };
 
 // Mock ResizeObserver
-global.ResizeObserver = class ResizeObserver {
+(global as any).ResizeObserver = class {
   constructor() {}
   observe() {}
   disconnect() {}
@@ -39,19 +48,15 @@ global.ResizeObserver = class ResizeObserver {
 };
 
 // Mock File and FileReader for upload tests
-global.File = class MockFile {
+(global as any).File = class {
   constructor(
-    public bits: (string | BufferSource | Blob)[],
+    public bits: any[],
     public name: string,
-    public options?: FilePropertyBag
+    public options?: any
   ) {}
   
   get size() {
-    return this.bits.reduce((acc, bit) => {
-      if (typeof bit === 'string') return acc + bit.length;
-      if (bit instanceof ArrayBuffer) return acc + bit.byteLength;
-      return acc;
-    }, 0);
+    return 1024; // Mock size
   }
   
   get type() {
@@ -59,18 +64,18 @@ global.File = class MockFile {
   }
 };
 
-global.FileReader = class MockFileReader {
-  result: string | ArrayBuffer | null = null;
+(global as any).FileReader = class {
+  result: any = null;
   error: any = null;
   readyState: number = 0;
-  onload: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null = null;
-  onerror: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null = null;
+  onload: any = null;
+  onerror: any = null;
   
   readAsText() {
     setTimeout(() => {
       this.result = 'mock file content';
       this.readyState = 2;
-      if (this.onload) this.onload({} as any);
+      if (this.onload) this.onload({});
     }, 0);
   }
   
@@ -78,7 +83,7 @@ global.FileReader = class MockFileReader {
     setTimeout(() => {
       this.result = 'data:text/plain;base64,bW9jayBmaWxlIGNvbnRlbnQ=';
       this.readyState = 2;
-      if (this.onload) this.onload({} as any);
+      if (this.onload) this.onload({});
     }, 0);
   }
 };
