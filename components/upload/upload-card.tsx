@@ -241,8 +241,13 @@ export function UploadCard() {
               </p>
             </div>
             
-            <div className="text-xs text-fg/50">
-              Supports PDF, DOCX, and TXT files up to 10MB
+            <div className="space-y-1">
+              <div className="text-xs text-fg/50">
+                Supports DOCX and TXT files up to 10MB
+              </div>
+              <div className="text-xs text-yellow-600">
+                PDF support temporarily unavailable - use "Paste Text" for PDF content
+              </div>
             </div>
           </div>
         </div>

@@ -32,15 +32,9 @@ export async function extractTextFromFile(file: File): Promise<string> {
  * Extract text from PDF files
  */
 async function extractFromPDF(buffer: Buffer): Promise<string> {
-  try {
-    // Dynamic import to avoid module loading issues
-    const pdfParse = await import('pdf-parse');
-    const data = await pdfParse.default(buffer);
-    return data.text;
-  } catch (error) {
-    console.error('PDF parsing error:', error);
-    throw new Error('Failed to parse PDF file. The file may be corrupted or password-protected.');
-  }
+  // PDF parsing is temporarily disabled due to library issues
+  // Users should convert PDFs to text or use the paste text feature
+  throw new Error('PDF parsing is temporarily unavailable. Please convert your PDF to text and paste the content, or upload a .docx or .txt file instead.');
 }
 
 /**
@@ -101,7 +95,7 @@ async function extractFromTXT(buffer: Buffer): Promise<string> {
 export function validateFile(file: File): { isValid: boolean; error?: string } {
   const maxSize = 10 * 1024 * 1024; // 10MB
   const supportedTypes = [
-    'application/pdf',
+    // 'application/pdf', // Temporarily disabled due to library issues
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'text/plain'
   ];
@@ -116,7 +110,7 @@ export function validateFile(file: File): { isValid: boolean; error?: string } {
   if (!supportedTypes.includes(file.type)) {
     return {
       isValid: false,
-      error: 'File type not supported. Please upload PDF, DOCX, or TXT files only.'
+      error: 'File type not supported. Please upload DOCX or TXT files, or use the "Paste Text" option for PDF content.'
     };
   }
 

@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         
         // Parse the extracted text
         const { parseSyllabusText } = await import('@/server/parsers/text-parser');
-        const parseResult = await parseSyllabusText(fileContent);
+        const parseResult = parseSyllabusText(fileContent);
 
         // Update syllabus with parsed course info
         await prisma.syllabus.update({

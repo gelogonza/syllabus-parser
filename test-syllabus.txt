@@ -1,0 +1,8 @@
+CS 101 - Introduction to Computer Science - Fall 2024
+Professor: Dr. Smith
+
+Assignment 1: Basic Programming - Due September 15, 2024 at 11:59 PM - 10%
+Midterm Exam: October 20, 2024 at 2:00 PM - 25%
+Assignment 2: Data Structures - Due October 30, 2024 - 15%
+Final Project: December 10, 2024 - 30%
+Final Exam: December 15, 2024 at 10:00 AM - 20%
