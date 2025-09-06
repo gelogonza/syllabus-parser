@@ -193,15 +193,3 @@ npm run test:watch
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
-
-- 📧 Email: support@syllabus-importer.com
-- 💬 Discord: [Join our community](https://discord.gg/syllabus-importer)
-- 📖 Documentation: [Full docs](docs/)
-- 🐛 Issues: [GitHub Issues](https://github.com/your-username/syllabus-importer/issues)
-
----
-
-<p align="center">
-  Made with ❤️ by the Syllabus Importer team
-</p>
