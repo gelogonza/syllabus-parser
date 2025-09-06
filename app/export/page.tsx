@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { PageShell, PageHeader } from "@/components/layout/page-shell";
+import { GoogleCalendarSync } from "@/components/export/google-calendar-sync";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Upload, Download, Calendar, ExternalLink } from "lucide-react";
@@ -16,11 +17,14 @@ interface Syllabus {
 export default function ExportPage() {
   const [syllabi, setSyllabi] = useState<Syllabus[]>([]);
   const [loading, setLoading] = useState(true);
+  const [recentId, setRecentId] = useState<string>("");
 
   useEffect(() => {
     // In a real app, you'd fetch user's syllabi
     // For now, let's check localStorage or use a simple fetch
     fetchSyllabi();
+    const id = typeof window !== 'undefined' ? localStorage.getItem('recentSyllabusId') : null;
+    if (id) setRecentId(id);
   }, []);
 
   const fetchSyllabi = async () => {
@@ -103,9 +107,9 @@ export default function ExportPage() {
                   size="sm"
                   onClick={() => {
                     // Get the most recent syllabus ID from URL or localStorage
-                    const recentId = localStorage.getItem('recentSyllabusId');
-                    if (recentId) {
-                      handleDownloadICS(recentId, 'recent-syllabus');
+                    const id = typeof window !== 'undefined' ? localStorage.getItem('recentSyllabusId') : recentId;
+                    if (id) {
+                      handleDownloadICS(id, 'recent-syllabus');
                     } else {
                       alert('No recent syllabus found. Please upload one first.');
                     }
@@ -114,10 +118,13 @@ export default function ExportPage() {
                   <Download className="mr-2 h-4 w-4" />
                   Download ICS
                 </Button>
-                <Button variant="outline" size="sm">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Add to Google Calendar
-                </Button>
+                      <GoogleCalendarSync 
+                        syllabusId={recentId}
+                        onSyncComplete={() => {
+                          // Optionally refresh or show success message
+                          console.log('Sync completed!');
+                        }}
+                      />
               </div>
             </div>
           </div>
@@ -158,13 +165,12 @@ export default function ExportPage() {
               <li>• Automatic updates when you edit tasks</li>
               <li>• Smart conflict resolution</li>
             </ul>
-            <Button variant="outline" className="w-full" disabled>
-              <ExternalLink className="mr-2 h-4 w-4" />
-              Connect Google Calendar
-              <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                Coming Soon
-              </span>
-            </Button>
+                  <GoogleCalendarSync 
+                    syllabusId={recentId}
+                    onSyncComplete={() => {
+                      console.log('Sync completed from main section!');
+                    }}
+                  />
           </div>
         </div>
 

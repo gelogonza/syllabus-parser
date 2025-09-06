@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Upload, File, X, AlertCircle, CheckCircle } from 'lucide-react';
+import { Upload, File as FileIcon, X, AlertCircle, CheckCircle } from 'lucide-react';
 import { fileUploadSchema } from '@/lib/utils/validation';
 import { z } from 'zod';
 
@@ -243,10 +243,10 @@ export function UploadCard() {
             
             <div className="space-y-1">
               <div className="text-xs text-fg/50">
-                Supports DOCX and TXT files up to 10MB
+                Supports PDF, DOCX, and TXT files up to 10MB
               </div>
-              <div className="text-xs text-yellow-600">
-                PDF support temporarily unavailable - use "Paste Text" for PDF content
+              <div className="text-xs text-green-600">
+                PDF parsing powered by Python microservice
               </div>
             </div>
           </div>
@@ -300,7 +300,7 @@ Final project due December 1st - 25% of grade"
                 className="flex items-center space-x-3 p-3 bg-muted rounded-lg"
               >
                 <div className="flex-shrink-0">
-                  <File className="h-5 w-5 text-fg/60" />
+                  <FileIcon className="h-5 w-5 text-fg/60" />
                 </div>
                 
                 <div className="flex-1 min-w-0">

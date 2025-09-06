@@ -2,9 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { fileUploadSchema } from '@/lib/utils/validation';
 import { z } from 'zod';
+import { getServerSession } from 'next-auth';
+import { getLimiter } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
+    const limiter = getLimiter();
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    const rate = await limiter.limit(`upload:${ip}`);
+    if (!rate.success) {
+      return NextResponse.json(
+        { error: 'Too many uploads. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
 
@@ -28,19 +40,30 @@ export async function POST(request: NextRequest) {
       throw error;
     }
 
-    // For now, we'll create a mock user. In production, you'd get this from authentication
-    const userId = 'mock-user-id';
-    
-    // Ensure user exists (in production, this would be handled by auth)
-    await prisma.user.upsert({
-      where: { id: userId },
-      update: {},
-      create: {
-        id: userId,
-        email: 'demo@example.com',
-        name: 'Demo User',
-      },
-    });
+    // Auth: get user session and resolve to a real user via email
+    const session = await getServerSession();
+    const email = session?.user?.email || null;
+    // Allow anonymous uploads; associate with a placeholder user if not signed in
+    let userId: string;
+    if (email) {
+      const user = await prisma.user.upsert({
+        where: { email },
+        update: {},
+        create: {
+          email,
+          name: session?.user?.name || null,
+        },
+      });
+      userId = user.id;
+    } else {
+      // Create or reuse a single anonymous user record
+      const anon = await prisma.user.upsert({
+        where: { email: 'anonymous@example.com' },
+        update: {},
+        create: { email: 'anonymous@example.com', name: 'Anonymous' },
+      });
+      userId = anon.id;
+    }
 
     // Create syllabus record
     const syllabus = await prisma.syllabus.create({
@@ -50,8 +73,21 @@ export async function POST(request: NextRequest) {
         fileName: file.name,
         fileSize: file.size,
         fileMimeType: file.type,
-        status: 'UPLOADED',
+        status: 'PARSING',
         userId,
+      },
+    });
+
+    // After syllabus creation
+    await prisma.auditLog.create({
+      data: {
+        userId: userId,
+        action: 'UPLOAD',
+        entity: 'Syllabus',
+        entityId: syllabus.id,
+        changes: { fileName: file.name },
+        ipAddress: request.headers.get('x-forwarded-for') || null,
+        userAgent: request.headers.get('user-agent') || null,
       },
     });
 

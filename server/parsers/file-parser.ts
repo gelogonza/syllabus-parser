@@ -29,12 +29,42 @@ export async function extractTextFromFile(file: File): Promise<string> {
 }
 
 /**
- * Extract text from PDF files
+ * Extract text from PDF files using Python microservice
  */
 async function extractFromPDF(buffer: Buffer): Promise<string> {
-  // PDF parsing is temporarily disabled due to library issues
-  // Users should convert PDFs to text or use the paste text feature
-  throw new Error('PDF parsing is temporarily unavailable. Please convert your PDF to text and paste the content, or upload a .docx or .txt file instead.');
+  const PDF_SERVICE_URL = process.env.PDF_SERVICE_URL || 'http://localhost:8001';
+  
+  try {
+    // Create form data with the PDF buffer
+    const formData = new FormData();
+    // Ensure the BlobPart is a Uint8Array to satisfy TS types in Node
+    const blob = new Blob([new Uint8Array(buffer)], { type: 'application/pdf' });
+    formData.append('file', blob, 'document.pdf');
+
+    // Call the Python PDF parsing service
+    const response = await fetch(`${PDF_SERVICE_URL}/parse-pdf-simple`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+      throw new Error(errorData.detail || `PDF service error: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result.text || '';
+    
+  } catch (error) {
+    console.error('PDF parsing error:', error);
+    
+    // If the PDF service is unavailable, provide helpful guidance
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('PDF parsing service is unavailable. Please use the "Paste Text" option to copy content from your PDF, or start the PDF service with: cd pdf-service && python main.py');
+    }
+    
+    throw new Error(`Failed to parse PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 /**
@@ -76,7 +106,7 @@ async function extractFromTXT(buffer: Buffer): Promise<string> {
           if (!text.includes('\uFFFD')) {
             break;
           }
-        } catch (e) {
+        } catch {
           continue;
         }
       }
@@ -95,7 +125,7 @@ async function extractFromTXT(buffer: Buffer): Promise<string> {
 export function validateFile(file: File): { isValid: boolean; error?: string } {
   const maxSize = 10 * 1024 * 1024; // 10MB
   const supportedTypes = [
-    // 'application/pdf', // Temporarily disabled due to library issues
+    'application/pdf',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'text/plain'
   ];
@@ -110,7 +140,7 @@ export function validateFile(file: File): { isValid: boolean; error?: string } {
   if (!supportedTypes.includes(file.type)) {
     return {
       isValid: false,
-      error: 'File type not supported. Please upload DOCX or TXT files, or use the "Paste Text" option for PDF content.'
+      error: 'File type not supported. Please upload PDF, DOCX, or TXT files only.'
     };
   }
 

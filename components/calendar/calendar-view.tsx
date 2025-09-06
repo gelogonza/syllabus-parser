@@ -106,9 +106,11 @@ export function CalendarView({ events, view, onViewChange, onEventClick }: Calen
               variant="outline"
               size="sm"
               onClick={navigatePrevious}
-              className="h-8 w-8 p-0"
+              className="h-8 px-2"
+              aria-label="Previous"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Prev
             </Button>
             <Button
               variant="outline"
@@ -122,9 +124,11 @@ export function CalendarView({ events, view, onViewChange, onEventClick }: Calen
               variant="outline"
               size="sm"
               onClick={navigateNext}
-              className="h-8 w-8 p-0"
+              className="h-8 px-2"
+              aria-label="Next"
             >
-              <ChevronRight className="h-4 w-4" />
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
         </div>

@@ -22,7 +22,11 @@ export interface ParseResult {
  * Parse syllabus text content and extract structured information
  */
 export function parseSyllabusText(content: string): ParseResult {
-  const lines = content.split('\n').filter(line => line.trim().length > 0);
+  const normalized = content
+    .replace(/\r\n?/g, '\n')
+    .replace(/[\u00A0\t]+/g, ' ') // non-breaking spaces/tabs to spaces
+    .replace(/\s+\-\s+(\d+%)/g, ' - $1'); // normalize space before percent
+  const lines = normalized.split('\n').map(l => l.trim()).filter(line => line.length > 0);
   const result: ParseResult = {
     items: []
   };
@@ -31,9 +35,9 @@ export function parseSyllabusText(content: string): ParseResult {
   const courseInfo = extractCourseInfo(lines.slice(0, 5).join(' '));
   Object.assign(result, courseInfo);
 
-  // Parse each line for assignments, exams, etc.
+  // Parse each line for assignments, exams, etc. Only keep items that have a date
   for (const line of lines) {
-    const items = parseLineForItems(line);
+    const items = parseLineForItems(line, { year: result.year }).filter(i => !!i.dueDate);
     result.items.push(...items);
   }
 
@@ -88,7 +92,7 @@ function extractCourseInfo(text: string): Partial<ParseResult> {
 /**
  * Parse a single line for assignment/exam information
  */
-function parseLineForItems(line: string): ParsedItem[] {
+function parseLineForItems(line: string, context?: { year?: number }): ParsedItem[] {
   const items: ParsedItem[] = [];
   const trimmedLine = line.trim();
   
@@ -98,12 +102,12 @@ function parseLineForItems(line: string): ParsedItem[] {
   const type = determineItemType(trimmedLine);
   if (!type) return items;
 
-  // Extract title (everything before "due" or date patterns)
+  // Extract due date using chrono-node (prefer explicit time when present)
+  const dueDate = extractDueDate(trimmedLine, context?.year);
+  if (!dueDate) return items; // enforce date presence
+
+  // Extract title with date/weight segments removed
   const title = extractTitle(trimmedLine, type);
-  
-  // Extract due date using chrono-node
-  const dates = chrono.parse(trimmedLine);
-  const dueDate = dates.length > 0 ? dates[0].start.date() : undefined;
   
   // Extract weight/percentage
   const weight = extractWeight(trimmedLine);
@@ -130,19 +134,19 @@ function parseLineForItems(line: string): ParsedItem[] {
 function determineItemType(text: string): ParsedItem['type'] | null {
   const lowerText = text.toLowerCase();
   
-  if (lowerText.includes('exam') || lowerText.includes('final') || lowerText.includes('midterm')) {
+  if (/(final\s+exam|midterm|exam)/i.test(lowerText)) {
     return 'EXAM';
   }
-  if (lowerText.includes('quiz')) {
+  if (/\bquiz\b|\btest\b|reading\s+quiz/i.test(lowerText)) {
     return 'QUIZ';
   }
-  if (lowerText.includes('project') || lowerText.includes('paper')) {
+  if (/(project|deliverable|milestone|proposal|paper|presentation)/i.test(lowerText)) {
     return 'PROJECT';
   }
-  if (lowerText.includes('assignment') || lowerText.includes('homework') || lowerText.includes('hw')) {
+  if (/(assignment|homework|problem\s*set|\bpset\b|\bhw\b|lab\s*report|\blab\b)/i.test(lowerText)) {
     return 'ASSIGNMENT';
   }
-  if (lowerText.includes('reading') || lowerText.includes('read')) {
+  if (/(reading|read\s+chapter|chapters?)/i.test(lowerText)) {
     return 'READING';
   }
   if (lowerText.includes('presentation') || lowerText.includes('class')) {
@@ -167,6 +171,10 @@ function determineItemType(text: string): ParsedItem['type'] | null {
 function extractTitle(text: string, type: ParsedItem['type']): string {
   // Remove common prefixes
   let title = text.replace(/^\s*[-•]\s*/, '');
+  title = title.replace(/^\s*(assignment|homework|quiz|exam|final exam|midterm|project|lab\s*report|lab|reading)\s*\d*[:\-]?\s*/i, '');
+
+  // Remove date phrases (due/on/by ...)
+  title = title.replace(/\s+(due|on|by)\s+.+$/i, '');
   
   // Extract everything before "due" or date patterns
   const dueIndex = title.toLowerCase().indexOf(' due');
@@ -179,6 +187,13 @@ function extractTitle(text: string, type: ParsedItem['type']): string {
   if (percentMatch) {
     title = percentMatch[1];
   }
+
+  // Remove trailing weight phrases like "- 15% of grade"
+  title = title.replace(/\s*-\s*\d+%\s+of\s+grade.*$/i, '');
+  title = title.replace(/\s*\d+%\s+of\s+grade.*$/i, '');
+  
+  // Trim leftover punctuation/whitespace
+  title = title.replace(/[\s:,-]+$/g, '');
   
   return title.trim() || `${type.toLowerCase()} item`;
 }
@@ -196,8 +211,36 @@ function extractWeight(text: string): number | undefined {
   if (pointsMatch) {
     return parseFloat(pointsMatch[1]);
   }
+  // "15% of grade" style already matched by percent regex
   
   return undefined;
+}
+
+/**
+ * Extract a due date from the line. If year is not certain, use context year.
+ * If time is missing, normalize to 00:00 (midnight); calendar layer will handle default due time.
+ */
+function extractDueDate(text: string, contextYear?: number): Date | undefined {
+  const results = chrono.parse(text);
+  if (results.length === 0 || !results[0].start) return undefined;
+  const comp: any = results[0].start as any;
+  const date: Date = comp.date();
+
+  // If year is not certain but context provides one, set it
+  try {
+    if (typeof comp.isCertain === 'function' && !comp.isCertain('year') && contextYear) {
+      date.setFullYear(contextYear);
+    }
+  } catch {}
+
+  // If time not certain, normalize to midnight
+  try {
+    if (typeof comp.isCertain === 'function' && !comp.isCertain('hour')) {
+      date.setHours(0, 0, 0, 0);
+    }
+  } catch {}
+
+  return date;
 }
 
 /**
