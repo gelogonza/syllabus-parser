@@ -51,9 +51,44 @@ export default function SettingsPage() {
                 <p className="text-sm text-fg/60">Timezone for exported events</p>
               </div>
               <select className="border border-border rounded-lg px-3 py-2 bg-bg text-fg">
-                <option>America/New_York</option>
-                <option>America/Los_Angeles</option>
-                <option>UTC</option>
+                <optgroup label="North America">
+                  <option value="America/New_York">Eastern Time (New York)</option>
+                  <option value="America/Chicago">Central Time (Chicago)</option>
+                  <option value="America/Denver">Mountain Time (Denver)</option>
+                  <option value="America/Los_Angeles">Pacific Time (Los Angeles)</option>
+                  <option value="America/Anchorage">Alaska Time (Anchorage)</option>
+                  <option value="Pacific/Honolulu">Hawaii Time (Honolulu)</option>
+                  <option value="America/Toronto">Eastern Time (Toronto)</option>
+                  <option value="America/Vancouver">Pacific Time (Vancouver)</option>
+                </optgroup>
+                <optgroup label="Europe">
+                  <option value="Europe/London">GMT (London)</option>
+                  <option value="Europe/Paris">CET (Paris)</option>
+                  <option value="Europe/Berlin">CET (Berlin)</option>
+                  <option value="Europe/Rome">CET (Rome)</option>
+                  <option value="Europe/Madrid">CET (Madrid)</option>
+                  <option value="Europe/Amsterdam">CET (Amsterdam)</option>
+                  <option value="Europe/Stockholm">CET (Stockholm)</option>
+                  <option value="Europe/Moscow">MSK (Moscow)</option>
+                </optgroup>
+                <optgroup label="Asia">
+                  <option value="Asia/Tokyo">JST (Tokyo)</option>
+                  <option value="Asia/Shanghai">CST (Shanghai)</option>
+                  <option value="Asia/Hong_Kong">HKT (Hong Kong)</option>
+                  <option value="Asia/Singapore">SGT (Singapore)</option>
+                  <option value="Asia/Seoul">KST (Seoul)</option>
+                  <option value="Asia/Mumbai">IST (Mumbai)</option>
+                  <option value="Asia/Dubai">GST (Dubai)</option>
+                </optgroup>
+                <optgroup label="Australia & Pacific">
+                  <option value="Australia/Sydney">AEDT (Sydney)</option>
+                  <option value="Australia/Melbourne">AEDT (Melbourne)</option>
+                  <option value="Australia/Perth">AWST (Perth)</option>
+                  <option value="Pacific/Auckland">NZDT (Auckland)</option>
+                </optgroup>
+                <optgroup label="Other">
+                  <option value="UTC">UTC (Coordinated Universal Time)</option>
+                </optgroup>
               </select>
             </div>
             

@@ -19,6 +19,8 @@ interface UploadedFile {
 export function UploadCard() {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [isDragActive, setIsDragActive] = useState(false);
+  const [inputMethod, setInputMethod] = useState<'file' | 'text'>('file');
+  const [textContent, setTextContent] = useState('');
 
   const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
     // Handle accepted files
@@ -134,6 +136,38 @@ export function UploadCard() {
     }
   };
 
+  const uploadTextContent = async () => {
+    if (!textContent.trim()) return;
+
+    try {
+      // Create a text file from the content
+      const textFile = new File([textContent], 'pasted-syllabus.txt', { type: 'text/plain' });
+      
+      // Create FormData
+      const formData = new FormData();
+      formData.append('file', textFile);
+
+      // Upload
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const result = await response.json();
+
+      // Redirect to review page
+      window.location.href = `/review/${result.syllabusId}`;
+
+    } catch (error) {
+      console.error('Text upload failed:', error);
+      // You could add error state handling here
+    }
+  };
+
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -147,41 +181,104 @@ export function UploadCard() {
 
   return (
     <div className="space-y-6">
-      {/* Upload Area */}
-      <div
-        {...getRootProps()}
-        className={cn(
-          "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors",
-          isDragActive 
-            ? "border-accent bg-accent/5" 
-            : "border-border hover:border-accent hover:bg-muted/50",
-          isUploading && "pointer-events-none opacity-50"
-        )}
-      >
-        <input {...getInputProps()} />
-        
-        <div className="space-y-4">
-          <div className="flex justify-center">
-            <Upload className="h-12 w-12 text-fg/40" />
-          </div>
+      {/* Input Method Toggle */}
+      <div className="flex items-center justify-center space-x-1 bg-muted rounded-lg p-1">
+        <button
+          onClick={() => setInputMethod('file')}
+          className={cn(
+            "px-4 py-2 text-sm font-medium rounded-md transition-colors",
+            inputMethod === 'file'
+              ? "bg-bg text-fg shadow-sm"
+              : "text-fg/60 hover:text-fg"
+          )}
+        >
+          Upload File
+        </button>
+        <button
+          onClick={() => setInputMethod('text')}
+          className={cn(
+            "px-4 py-2 text-sm font-medium rounded-md transition-colors",
+            inputMethod === 'text'
+              ? "bg-bg text-fg shadow-sm"
+              : "text-fg/60 hover:text-fg"
+          )}
+        >
+          Paste Text
+        </button>
+      </div>
+
+      {inputMethod === 'file' ? (
+        /* File Upload Area */
+        <div
+          {...getRootProps()}
+          className={cn(
+            "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors",
+            isDragActive 
+              ? "border-accent bg-accent/5" 
+              : "border-border hover:border-accent hover:bg-muted/50",
+            isUploading && "pointer-events-none opacity-50"
+          )}
+        >
+          <input {...getInputProps()} />
           
+          <div className="space-y-4">
+            <div className="flex justify-center">
+              <Upload className="h-12 w-12 text-fg/40" />
+            </div>
+            
+            <div className="space-y-2">
+              <h3 className="text-lg font-heading text-fg">
+                {isDragActive ? 'Drop your syllabus here' : 'Upload your syllabus'}
+              </h3>
+              <p className="text-sm text-fg/60">
+                Drag and drop your file here, or click to browse
+              </p>
+            </div>
+            
+            <div className="text-xs text-fg/50">
+              Supports PDF, DOCX, and TXT files up to 10MB
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Text Input Area */
+        <div className="space-y-4">
           <div className="space-y-2">
-            <h3 className="text-lg font-heading text-fg">
-              {isDragActive ? 'Drop your syllabus here' : 'Upload your syllabus'}
-            </h3>
+            <h3 className="text-lg font-heading text-fg">Paste your syllabus text</h3>
             <p className="text-sm text-fg/60">
-              Drag and drop your file here, or click to browse
+              Copy and paste the content of your syllabus directly
             </p>
           </div>
           
-          <div className="text-xs text-fg/50">
-            Supports PDF, DOCX, and TXT files up to 10MB
-          </div>
-        </div>
-      </div>
+          <textarea
+            value={textContent}
+            onChange={(e) => setTextContent(e.target.value)}
+            placeholder="Paste your syllabus content here...
 
-      {/* File List */}
-      {files.length > 0 && (
+Example:
+Computer Science 101 - Fall 2024
+
+Assignment 1 due September 15th at 11:59 PM - 10% of grade
+Midterm exam October 15th at 2:00 PM - 30% of grade
+Final project due December 1st - 25% of grade"
+            className="w-full min-h-[300px] p-4 border border-border rounded-lg bg-bg text-fg placeholder:text-fg/40 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent resize-none"
+          />
+          
+          {textContent.trim() && (
+            <div className="flex justify-end">
+              <Button 
+                onClick={uploadTextContent}
+                size="lg"
+              >
+                Process Text
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* File List - only show for file upload mode */}
+      {inputMethod === 'file' && files.length > 0 && (
         <div className="space-y-3">
           <h4 className="font-heading text-fg">Selected Files</h4>
           
@@ -254,8 +351,8 @@ export function UploadCard() {
         </div>
       )}
 
-      {/* Upload Button */}
-      {hasValidFiles && (
+      {/* Upload Button - only show for file upload mode */}
+      {inputMethod === 'file' && hasValidFiles && (
         <div className="flex justify-end">
           <Button 
             onClick={uploadFiles}
