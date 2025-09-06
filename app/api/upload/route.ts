@@ -58,10 +58,11 @@ export async function POST(request: NextRequest) {
     // Parse the uploaded file content
     setTimeout(async () => {
       try {
-        // Read file content (in production, you'd read from blob storage)
-        const fileContent = await file.text();
+        // Extract text from file based on type (PDF, DOCX, or TXT)
+        const { extractTextFromFile } = await import('@/server/parsers/file-parser');
+        const fileContent = await extractTextFromFile(file);
         
-        // Import and use the parser
+        // Parse the extracted text
         const { parseSyllabusText } = await import('@/server/parsers/text-parser');
         const parseResult = await parseSyllabusText(fileContent);
 
