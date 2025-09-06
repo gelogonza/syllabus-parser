@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Sidebar } from "@/components/layout/sidebar";
+import { CommandMenu } from "@/components/ui/command-menu";
 
 export const metadata: Metadata = {
   title: "Syllabus Importer",
@@ -21,8 +22,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="font-sans antialiased">
+    <html lang="en" suppressHydrationWarning={true}>
+      <body className="font-sans antialiased" suppressHydrationWarning={true}>
         <Providers>
           <div className="flex h-screen bg-bg">
             <Sidebar />
@@ -30,6 +31,7 @@ export default function RootLayout({
               {children}
             </main>
           </div>
+          <CommandMenu />
         </Providers>
       </body>
     </html>
