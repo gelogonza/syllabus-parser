@@ -1,5 +1,18 @@
-import pdfParse from 'pdf-parse';
-import mammoth from 'mammoth';
+// Import with proper error handling for different environments
+let pdfParse: any;
+let mammoth: any;
+
+try {
+  pdfParse = require('pdf-parse');
+} catch (error) {
+  console.warn('pdf-parse not available:', error);
+}
+
+try {
+  mammoth = require('mammoth');
+} catch (error) {
+  console.warn('mammoth not available:', error);
+}
 
 /**
  * Extract text content from different file types
@@ -33,6 +46,10 @@ export async function extractTextFromFile(file: File): Promise<string> {
  * Extract text from PDF files
  */
 async function extractFromPDF(buffer: Buffer): Promise<string> {
+  if (!pdfParse) {
+    throw new Error('PDF parsing is not available. Please ensure pdf-parse is properly installed.');
+  }
+  
   try {
     const data = await pdfParse(buffer);
     return data.text;
@@ -46,6 +63,10 @@ async function extractFromPDF(buffer: Buffer): Promise<string> {
  * Extract text from DOCX files
  */
 async function extractFromDOCX(buffer: Buffer): Promise<string> {
+  if (!mammoth) {
+    throw new Error('DOCX parsing is not available. Please ensure mammoth is properly installed.');
+  }
+  
   try {
     const result = await mammoth.extractRawText({ buffer });
     
