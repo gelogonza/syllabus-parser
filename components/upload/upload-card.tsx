@@ -116,6 +116,9 @@ export function UploadCard() {
             : f
         ));
 
+        // Store recent syllabus ID for export functionality
+        localStorage.setItem('recentSyllabusId', result.syllabusId);
+        
         // Redirect to review page after successful upload
         setTimeout(() => {
           window.location.href = `/review/${result.syllabusId}`;
@@ -158,6 +161,9 @@ export function UploadCard() {
       }
 
       const result = await response.json();
+
+      // Store recent syllabus ID for export functionality
+      localStorage.setItem('recentSyllabusId', result.syllabusId);
 
       // Redirect to review page
       window.location.href = `/review/${result.syllabusId}`;

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Sidebar } from "@/components/layout/sidebar";
+import { CommandMenu } from "@/components/ui/command-menu";
 
 export const metadata: Metadata = {
   title: "Syllabus Importer",
@@ -30,6 +31,7 @@ export default function RootLayout({
               {children}
             </main>
           </div>
+          <CommandMenu />
         </Providers>
       </body>
     </html>
