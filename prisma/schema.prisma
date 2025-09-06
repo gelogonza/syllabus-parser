@@ -1,0 +1,123 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  syllabi   Syllabus[]
+  auditLogs AuditLog[]
+  oauthTokens OAuthToken[]
+
+  @@map("users")
+}
+
+model Syllabus {
+  id           String   @id @default(cuid())
+  title        String
+  courseName   String
+  semester     String?
+  year         Int?
+  instructor   String?
+  fileName     String
+  fileSize     Int
+  fileMimeType String
+  fileUrl      String?
+  status       SyllabusStatus @default(UPLOADED)
+  parseJobId   String?
+  parsedAt     DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  items     SyllabusItem[]
+  auditLogs AuditLog[]
+
+  @@map("syllabi")
+}
+
+model SyllabusItem {
+  id          String   @id @default(cuid())
+  title       String
+  type        ItemType
+  dueDate     DateTime?
+  weight      Float?
+  description String?
+  confidence  Float    @default(1.0)
+  sourceLine  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  syllabusId String
+  syllabus   Syllabus @relation(fields: [syllabusId], references: [id], onDelete: Cascade)
+
+  @@map("syllabus_items")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  entity    String
+  entityId  String
+  changes   Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  syllabusId String?
+  syllabus   Syllabus? @relation(fields: [syllabusId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+}
+
+model OAuthToken {
+  id           String   @id @default(cuid())
+  provider     String   // 'google'
+  accessToken  String
+  refreshToken String?
+  expiresAt    DateTime?
+  scope        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@map("oauth_tokens")
+}
+
+enum SyllabusStatus {
+  UPLOADED
+  PARSING
+  PARSED
+  ERROR
+  REVIEW_NEEDED
+}
+
+enum ItemType {
+  ASSIGNMENT
+  EXAM
+  QUIZ
+  PROJECT
+  READING
+  EVENT
+  DEADLINE
+}
